@@ -2,9 +2,16 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, Animated, Alert } 
 import React, { useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import Logo from './Logo';
+import { StackNavigationProp } from '@react-navigation/stack';
 
+import { RootStackParamList } from '../App';
+import { transformer } from '../metro.config';
 
-function LoginScreen() {
+type LoginScreenProps = {
+  navigation: StackNavigationProp<RootStackParamList, 'Login'>;
+};
+
+function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -20,7 +27,16 @@ function LoginScreen() {
       return;
     }
 
-    Alert.alert('success', 'Login successful');
+    Alert.alert('success', 'Login successful',[
+      {
+        text: 'OK',
+        onPress: () => navigation.navigate('Home', { email: email }),
+      },
+    ]);
+  };
+
+  const handleForgotPassword = () => {
+    Alert.alert('Forgot Password', 'Password reset functionality will be implemented here');
   };
 
   return (
@@ -58,7 +74,7 @@ function LoginScreen() {
         </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleForgotPassword}>
           <Text style={Styles.forgotPassword}>Forgot Password</Text>
         </TouchableOpacity>
       </View>
@@ -89,7 +105,7 @@ const Styles = StyleSheet.create({
   },
 
   formContainer: {
-    width: '85%',
+    width: '100%',
     backgroundColor: '#ddd',
     borderRadius: 15,
     padding: 20,
@@ -108,6 +124,7 @@ const Styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
+
   signInbutton: {
     fontSize: 18,
     fontFamily: 'Gill Sans',
