@@ -6,10 +6,15 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../App';
 import { launchCamera, launchImageLibrary, CameraOptions, ImagePickerResponse } from 'react-native-image-picker';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type HomeScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Home'>;
   route: RouteProp<RootStackParamList, 'Home'>;
+};
+
+const navigateToImageUploader = (navigation: NativeStackNavigationProp<RootStackParamList, 'Home'>) => {
+  navigation.navigate('imageUploader');
 };
 
 const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
@@ -93,14 +98,14 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
       assetType: 'Photos',
       include: ['filename', 'imageSize', 'playableDuration'],
     })
-    .then(r => {
-      console.log('Photos loaded successfully:', r.edges.length);
-      setPhotos(r.edges);
-    })
-    .catch(err => {
-      console.error('Error loading photos:', err);
-      Alert.alert('Error', `Could not load photos: ${err.message}`);
-    });
+      .then(r => {
+        console.log('Photos loaded successfully:', r.edges.length);
+        setPhotos(r.edges);
+      })
+      .catch(err => {
+        console.error('Error loading photos:', err);
+        Alert.alert('Error', `Could not load photos: ${err.message}`);
+      });
   };
 
   const handleLogout = () => {
@@ -114,10 +119,12 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
         'Please grant camera permission to take photos',
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Grant Permission', onPress: async () => {
-            const granted = await hasCameraAccess();
-            setHasCameraPermission(granted);
-          }},
+          {
+            text: 'Grant Permission', onPress: async () => {
+              const granted = await hasCameraAccess();
+              setHasCameraPermission(granted);
+            },
+          },
         ]
       );
       return;
@@ -154,13 +161,15 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
         'Please grant gallery permission to access photos',
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Grant Permission', onPress: async () => {
-            const granted = await hasPhotoPermission();
-            setHasGalleryPermission(granted);
-            if (granted) {
-              getPhotos();
-            }
-          }},
+          {
+            text: 'Grant Permission', onPress: async () => {
+              const granted = await hasPhotoPermission();
+              setHasGalleryPermission(granted);
+              if (granted) {
+                getPhotos();
+              }
+            },
+          },
         ]
       );
       return;
@@ -187,8 +196,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
       onPress={() => {
         Alert.alert(
           'Image Details',
-          `Filename: ${item.node.image.filename || 'Unknown'}\nSize: ${
-            item.node.image.width || 0} x ${item.node.image.height || 0
+          `Filename: ${item.node.image.filename || 'Unknown'}\nSize: ${item.node.image.width || 0} x ${item.node.image.height || 0
           }`
         );
       }}
@@ -207,7 +215,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
       {/* User welcome header */}
       {email && (
         <View style={styles.headerContainer}>
-          <Text style={styles.welcomeText}>Welcome, {email}</Text>
+          <Text style={styles.welcomeText}>Welcome :{email}</Text>
         </View>
       )}
 
@@ -241,7 +249,7 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
             numColumns={2}
             renderItem={renderItem}
             keyExtractor={(_item, index) => index.toString()}
-            contentContainerStyle={styles.listContainer}
+            // contentContainerStyle={styles.listContainer}
           />
         ) : (
           <Text style={styles.emptyText}>
@@ -258,10 +266,10 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
           disabled={!hasGalleryPermission}
         >
           <LinearGradient
-            colors={['#000', '#333', '#000']}
+            colors={['#27ae60', '#333', '#27ae60']}
             style={[styles.gradient, !hasGalleryPermission && styles.disabledButton]}
           >
-            <Text style={styles.buttonText}>Refresh Photos</Text>
+            <Text style={styles.buttonText}>Refresh</Text>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -269,12 +277,8 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
           style={styles.button}
           onPress={takePicture}
         >
-        <TouchableOpacity
-          style={styles.button}
-          onPress={openGallery}
-        />
           <LinearGradient
-            colors={['#3498db', '#2980b9', '#3498db']}
+            colors={['#3498db', '#333', '#3498db']}
             style={styles.gradient}
           >
             <Text style={styles.buttonText}>Take Photo</Text>
@@ -283,14 +287,20 @@ const HomeScreen = ({ navigation, route }: HomeScreenProps) => {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={handleLogout}
+          onPress={() => navigateToImageUploader(navigation)}
         >
           <LinearGradient
-            colors={['#e74c3c', '#c0392b', '#e74c3c']}
+            colors={['#3498db', '#333', '#3498db']}
             style={styles.gradient}
           >
-            <Text style={styles.buttonText}>Logout</Text>
+            <Text style={styles.buttonText}>Next</Text>
           </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogout}>
+          <SafeAreaView style={styles.button} />
         </TouchableOpacity>
       </View>
     </View>
@@ -301,6 +311,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    paddingBottom: 120,
   },
   headerContainer: {
     padding: 20,
@@ -345,21 +356,22 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 40,
   },
-  listContainer: {
-    paddingBottom: 100, // Space for buttons
-  },
+  // listContainer: {
+  //   paddingBottom: 120, // Space for buttons
+  // },
   buttonContainer: {
     position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
+    bottom: 10,
+    left: 10,
+    right: -25,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
+
   },
   button: {
     width: '30%',
-    borderRadius: 10,
+    borderRadius: 50,
     overflow: 'hidden',
   },
   gradient: {
@@ -392,6 +404,7 @@ const styles = StyleSheet.create({
   },
   permissionButton: {
     backgroundColor: '#FF8F00',
+
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 5,
@@ -399,6 +412,24 @@ const styles = StyleSheet.create({
   permissionButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  uploader1: {
+    fontSize: 22,
+    textAlign: 'center',
+    marginVertical: 10,
+  },
+  container1: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 20,
+    marginBottom: 10,
+  },
+  button1: {
+    backgroundColor: 'black',
+    padding: 10,
+    borderRadius: 5,
   },
 });
 
